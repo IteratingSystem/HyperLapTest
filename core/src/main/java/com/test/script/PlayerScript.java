@@ -6,8 +6,12 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
+import com.badlogic.gdx.physics.box2d.Contact;
+import com.badlogic.gdx.physics.box2d.Fixture;
+import games.rednblack.editor.renderer.components.DimensionsComponent;
 import games.rednblack.editor.renderer.components.TransformComponent;
 import games.rednblack.editor.renderer.components.physics.PhysicsBodyComponent;
+import games.rednblack.editor.renderer.physics.PhysicsContact;
 import games.rednblack.editor.renderer.scripts.BasicScript;
 import games.rednblack.editor.renderer.utils.ComponentRetriever;
 import games.rednblack.editor.renderer.utils.ItemWrapper;
@@ -18,7 +22,7 @@ import games.rednblack.editor.renderer.utils.ItemWrapper;
  * @name com.test.script
  * @description
  **/
-public class PlayerScript extends BasicScript {
+public class PlayerScript extends BasicScript implements PhysicsContact {
     private static final int LEFT = 1;
     private static final int RIGHT = -1;
     private static final int JUMP = 0;
@@ -72,7 +76,7 @@ public class PlayerScript extends BasicScript {
         if (Gdx.input.isKeyPressed(Input.Keys.D)){
             movePlayer(RIGHT);
         }
-        if (Gdx.input.isKeyPressed(Input.Keys.PAUSE)){
+        if (Gdx.input.isKeyPressed(Input.Keys.SPACE)){
             TransformComponent transformComponent = ComponentRetriever.get(entity,TransformComponent.class,engine);
 
             if (transformComponent.y < 6){
@@ -83,6 +87,35 @@ public class PlayerScript extends BasicScript {
 
     @Override
     public void dispose() {
+
+    }
+
+    @Override
+    public void beginContact(int contactEntity, Fixture contactFixture, Fixture ownFixture, Contact contact) {
+
+    }
+
+    @Override
+    public void endContact(int contactEntity, Fixture contactFixture, Fixture ownFixture, Contact contact) {
+
+    }
+
+    @Override
+    public void preSolve(int contactEntity, Fixture contactFixture, Fixture ownFixture, Contact contact) {
+        TransformComponent transformComponent = ComponentRetriever.get(entity, TransformComponent.class,engine);
+
+        TransformComponent contactTransformComponent = ComponentRetriever.get(contactEntity, TransformComponent.class, engine);
+        DimensionsComponent contactDimensionsComponent = ComponentRetriever.get(contactEntity, DimensionsComponent.class, engine);
+
+        if (transformComponent.y < contactTransformComponent.y + contactDimensionsComponent.height){
+            contact.setFriction(0);
+        } else {
+            contact.setFriction(1);
+        }
+    }
+
+    @Override
+    public void postSolve(int contactEntity, Fixture contactFixture, Fixture ownFixture, Contact contact) {
 
     }
 }
