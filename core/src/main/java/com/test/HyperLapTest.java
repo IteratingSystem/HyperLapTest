@@ -10,7 +10,9 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.test.component.PlayerComponent;
 import com.test.script.PlayerScript;
+import com.test.system.PlayerAnimationSystem;
 import games.rednblack.editor.renderer.SceneConfiguration;
 import games.rednblack.editor.renderer.SceneLoader;
 import games.rednblack.editor.renderer.resources.AsyncResourceManager;
@@ -43,14 +45,18 @@ public class HyperLapTest extends ApplicationAdapter {
 
         SceneConfiguration configuration = new SceneConfiguration();
         configuration.setResourceRetriever(asyncResourceManager);
+        configuration.addSystem(new PlayerAnimationSystem());
 
         sceneLoader = new SceneLoader(configuration);
         sceneLoader.loadScene("MainScene",viewport);
 
         engine = sceneLoader.getEngine();
 
+
         ItemWrapper root = new ItemWrapper(sceneLoader.getRoot(),engine);
         ItemWrapper player = root.getChild("player");
+        int animEntity = player.getChild("player-anim").getEntity();
+        engine.getMapper(PlayerComponent.class).create(animEntity);
         player.addScript(new PlayerScript(engine));
     }
 
