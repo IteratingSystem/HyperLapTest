@@ -1,5 +1,6 @@
 package com.test.script;
 
+import com.artemis.ComponentManager;
 import com.artemis.Entity;
 import com.artemis.World;
 import com.badlogic.gdx.Gdx;
@@ -8,7 +9,9 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.Fixture;
+import com.test.component.PlayerComponent;
 import games.rednblack.editor.renderer.components.DimensionsComponent;
+import games.rednblack.editor.renderer.components.MainItemComponent;
 import games.rednblack.editor.renderer.components.TransformComponent;
 import games.rednblack.editor.renderer.components.physics.PhysicsBodyComponent;
 import games.rednblack.editor.renderer.physics.PhysicsContact;
@@ -92,12 +95,22 @@ public class PlayerScript extends BasicScript implements PhysicsContact {
 
     @Override
     public void beginContact(int contactEntity, Fixture contactFixture, Fixture ownFixture, Contact contact) {
+        MainItemComponent mainItemComponent = ComponentRetriever.get(contactEntity, MainItemComponent.class,engine);
+        PlayerComponent playerComponent = animEntity.getComponent(PlayerComponent.class);
 
+        if (mainItemComponent.tags.contains("platform")){
+            playerComponent.touchedPlatforms++;
+        }
     }
 
     @Override
     public void endContact(int contactEntity, Fixture contactFixture, Fixture ownFixture, Contact contact) {
+        MainItemComponent mainItemComponent = ComponentRetriever.get(contactEntity, MainItemComponent.class,engine);
+        PlayerComponent playerComponent = animEntity.getComponent(PlayerComponent.class);
 
+        if (mainItemComponent.tags.contains("platform")){
+            playerComponent.touchedPlatforms--;
+        }
     }
 
     @Override

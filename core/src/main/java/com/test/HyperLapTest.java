@@ -12,6 +12,7 @@ import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.test.component.PlayerComponent;
 import com.test.script.PlayerScript;
+import com.test.system.CameraSystem;
 import com.test.system.PlayerAnimationSystem;
 import games.rednblack.editor.renderer.SceneConfiguration;
 import games.rednblack.editor.renderer.SceneLoader;
@@ -43,9 +44,12 @@ public class HyperLapTest extends ApplicationAdapter {
 
         AsyncResourceManager asyncResourceManager = assetManager.get("project.dt", AsyncResourceManager.class);
 
+        CameraSystem cameraSystem = new CameraSystem(5, 40, 5, 6);
+
         SceneConfiguration configuration = new SceneConfiguration();
         configuration.setResourceRetriever(asyncResourceManager);
         configuration.addSystem(new PlayerAnimationSystem());
+        configuration.addSystem(cameraSystem);
 
         sceneLoader = new SceneLoader(configuration);
         sceneLoader.loadScene("MainScene",viewport);
@@ -58,6 +62,7 @@ public class HyperLapTest extends ApplicationAdapter {
         int animEntity = player.getChild("player-anim").getEntity();
         engine.getMapper(PlayerComponent.class).create(animEntity);
         player.addScript(new PlayerScript(engine));
+        cameraSystem.setFocus(engine.getEntity(player.getEntity()));
     }
 
     @Override
