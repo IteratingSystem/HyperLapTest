@@ -8,10 +8,14 @@ import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.test.component.DiamondComponent;
 import com.test.component.PlayerComponent;
 import com.test.script.PlayerScript;
+import com.test.stage.HUD;
 import com.test.system.CameraSystem;
 import com.test.system.PlayerAnimationSystem;
 import games.rednblack.editor.renderer.SceneConfiguration;
@@ -29,7 +33,10 @@ public class HyperLapTest extends ApplicationAdapter {
 
     private SceneLoader sceneLoader;
 
-    World engine;
+    private World engine;
+
+    private HUD hud;
+    private Viewport hudViewPort;
 
     @Override
     public void create() {
@@ -40,11 +47,18 @@ public class HyperLapTest extends ApplicationAdapter {
         assetManager = new AssetManager();
         assetManager.setLoader(AsyncResourceManager.class, new ResourceManagerLoader(assetManager.getFileHandleResolver()));
         assetManager.load("project.dt", AsyncResourceManager.class);
+        assetManager.load("skin/skin.json", Skin.class);
+        assetManager.load("skin/skin.atlas", TextureAtlas.class);
         assetManager.finishLoading();
 
+        Skin skin = assetManager.get("skin/skin.json");
+        TextureAtlas textureAtlas = assetManager.get("skin/skin.atlas");
+
         AsyncResourceManager asyncResourceManager = assetManager.get("project.dt", AsyncResourceManager.class);
+//        asyncResourceManager.addAtlasPack("skin",textureAtlas);
 
         CameraSystem cameraSystem = new CameraSystem(5, 40, 5, 6);
+
 
         SceneConfiguration configuration = new SceneConfiguration();
         configuration.setResourceRetriever(asyncResourceManager);
@@ -53,6 +67,7 @@ public class HyperLapTest extends ApplicationAdapter {
 
         sceneLoader = new SceneLoader(configuration);
         sceneLoader.loadScene("MainScene",viewport);
+        sceneLoader.addComponentByTagName("diamond", DiamondComponent.class);
 
         engine = sceneLoader.getEngine();
 
@@ -61,8 +76,17 @@ public class HyperLapTest extends ApplicationAdapter {
         ItemWrapper player = root.getChild("player");
         int animEntity = player.getChild("player-anim").getEntity();
         engine.getMapper(PlayerComponent.class).create(animEntity);
-        player.addScript(new PlayerScript(engine));
+        PlayerScript playerScript = new PlayerScript(engine);
+        player.addScript(playerScript);
         cameraSystem.setFocus(engine.getEntity(player.getEntity()));
+
+
+        hudViewPort = new ExtendViewport(768,576);
+
+
+        hud = new HUD(skin,textureAtlas,hudViewPort,sceneLoader.getBatch());
+        hud.setPlayerScript(playerScript);
+        Gdx.input.setInputProcessor(hud);
     }
 
     @Override
@@ -73,11 +97,17 @@ public class HyperLapTest extends ApplicationAdapter {
         viewport.apply();
 
         engine.process();
+
+//        hud.act(Gdx.graphics.getDeltaTime());
+//        hudViewPort.apply();
+//        hud.draw();
     }
 
     @Override
     public void resize(int width, int height) {
         viewport.update(width,height);
+
+        hudViewPort.update(width,height,true);
 
         if (width != 0 &&  height != 0){
             sceneLoader.resize(width,height );
